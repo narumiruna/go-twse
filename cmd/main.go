@@ -15,6 +15,6 @@ func main() {
 	}
 
 	for _, info := range data.MsgArray {
-		fmt.Println(info.String())
+		fmt.Println(info)
 	}
 }

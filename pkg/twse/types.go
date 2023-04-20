@@ -68,7 +68,7 @@ type StockInfo struct {
 	Ts          string  `json:"ts"`
 }
 
-func (i *StockInfo) String() string {
+func (i StockInfo) String() string {
 	netChange := (i.Last/i.PrevClose - 1.0) * 100
 	return fmt.Sprintf("%s(%s), Open: %s, High: %s, Low: %s, Last: %s, Net Change: %f%%",
 		i.ShortName,
