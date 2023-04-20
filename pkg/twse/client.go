@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -54,9 +55,9 @@ func (c *RestClient) NewRequest(ctx context.Context, method string, refURL strin
 	return req, nil
 }
 
-func (c *RestClient) QueryStockInfo(ctx context.Context, symbol string) (*Response, error) {
+func (c *RestClient) QueryStockInfo(ctx context.Context, symbols string) (*Response, error) {
 	params := url.Values{}
-	params.Add("ex_ch", fmt.Sprintf("tse_%s.tw", symbol))
+	params.Add("ex_ch", buildExCh(symbols))
 	params.Add("json", "1")
 	params.Add("delay", "0")
 	params.Add("_", strconv.FormatInt(time.Now().UnixMilli(), 10))
@@ -84,4 +85,13 @@ func (c *RestClient) QueryStockInfo(ctx context.Context, symbol string) (*Respon
 	}
 
 	return &data, nil
+}
+
+func buildExCh(raw string) string {
+	var outputs []string
+	for _, s := range strings.Split(raw, " ") {
+		outputs = append(outputs, fmt.Sprintf("tse_%s.tw", s))
+		outputs = append(outputs, fmt.Sprintf("otc_%s.tw", s))
+	}
+	return strings.Join(outputs, "|")
 }

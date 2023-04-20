@@ -9,11 +9,12 @@ import (
 
 func main() {
 	c := twse.NewRestClient()
-	data, err := c.QueryStockInfo(context.Background(), "2330")
+	data, err := c.QueryStockInfo(context.Background(), "2330 0050")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(data)
-	fmt.Println(data.MsgArray[0].String())
+	for _, info := range data.MsgArray {
+		fmt.Println(info.String())
+	}
 }
