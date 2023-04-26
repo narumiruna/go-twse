@@ -29,7 +29,7 @@ type QueryTime struct {
 }
 
 type StockInfo struct {
-	TotalVolume int64   `json:"tv,string"`
+	Volume      int64   `json:"tv,string"`
 	Ps          string  `json:"ps"`
 	Nu          string  `json:"nu"`
 	Pz          string  `json:"pz"`
@@ -60,7 +60,7 @@ type StockInfo struct {
 	S           string  `json:"s"`
 	T           string  `json:"t"`
 	U           string  `json:"u"`
-	Volume      int64   `json:"v,string"`
+	TotalVolume int64   `json:"v,string"`
 	W           string  `json:"w"`
 	Name        string  `json:"nf"`
 	PrevClose   float64 `json:"y,string"`
@@ -70,7 +70,7 @@ type StockInfo struct {
 
 func (i StockInfo) String() string {
 	netChange := (i.Last/i.PrevClose - 1.0) * 100
-	return fmt.Sprintf("%s(%s), Open: %s, High: %s, Low: %s, Last: %s, Net Change: %f%%",
+	return fmt.Sprintf("%s(%s), Open: %s, High: %s, Low: %s, Last: %s, Net Change: %f%%, Volume: %d",
 		i.ShortName,
 		i.Symbol,
 		humanize.Commaf(i.Open),
@@ -78,5 +78,6 @@ func (i StockInfo) String() string {
 		humanize.Commaf(i.Low),
 		humanize.Commaf(i.Last),
 		netChange,
+		i.TotalVolume,
 	)
 }
