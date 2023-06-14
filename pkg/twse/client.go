@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const defaultTimeout = 15 * time.Second
@@ -66,7 +68,7 @@ func (c *RestClient) QueryStockInfo(ctx context.Context, symbols string) (*Respo
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(req.URL)
+	log.Debugf("url: %s", req.URL.String())
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -78,6 +80,7 @@ func (c *RestClient) QueryStockInfo(ctx context.Context, symbols string) (*Respo
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("body: %s", string(body))
 
 	var data Response
 	if err := json.Unmarshal(body, &data); err != nil {
