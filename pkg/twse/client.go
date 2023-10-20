@@ -57,9 +57,9 @@ func (c *RestClient) NewRequest(ctx context.Context, method string, refURL strin
 	return req, nil
 }
 
-func (c *RestClient) QueryStockInfo(ctx context.Context, symbols string) (*Response, error) {
+func (c *RestClient) QueryStockInfo(ctx context.Context, symbols ...string) (*Response, error) {
 	params := url.Values{}
-	params.Add("ex_ch", buildExCh(symbols))
+	params.Add("ex_ch", buildExCh(symbols...))
 	params.Add("json", "1")
 	params.Add("delay", "0")
 	params.Add("_", strconv.FormatInt(time.Now().UnixMilli(), 10))
@@ -68,7 +68,6 @@ func (c *RestClient) QueryStockInfo(ctx context.Context, symbols string) (*Respo
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("url: %s", req.URL.String())
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -80,7 +79,7 @@ func (c *RestClient) QueryStockInfo(ctx context.Context, symbols string) (*Respo
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("body: %s", string(body))
+	log.Infof("body: %s", string(body))
 
 	var data Response
 	if err := json.Unmarshal(body, &data); err != nil {
@@ -90,11 +89,11 @@ func (c *RestClient) QueryStockInfo(ctx context.Context, symbols string) (*Respo
 	return &data, nil
 }
 
-func buildExCh(raw string) string {
-	var outputs []string
-	for _, s := range strings.Split(raw, " ") {
-		outputs = append(outputs, fmt.Sprintf("tse_%s.tw", s))
-		outputs = append(outputs, fmt.Sprintf("otc_%s.tw", s))
+func buildExCh(symbols ...string) string {
+	var slice []string
+	for _, s := range symbols {
+		slice = append(slice, fmt.Sprintf("tse_%s.tw", s))
+		slice = append(slice, fmt.Sprintf("otc_%s.tw", s))
 	}
-	return strings.Join(outputs, "|")
+	return strings.Join(slice, "|")
 }

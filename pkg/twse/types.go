@@ -2,10 +2,93 @@ package twse
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"encoding/json"
 
 	"github.com/dustin/go-humanize"
-	"github.com/narumiruna/go-twse/pkg/types"
 )
+
+type Number string
+
+func (n *Number) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	*n = Number(s)
+	return nil
+}
+
+func (n Number) Float64() float64 {
+	if n == "-" {
+		return 0
+	}
+
+	f, err := strconv.ParseFloat(string(n), 64)
+	if err != nil {
+		return 0
+	}
+
+	return f
+}
+
+func (n Number) Int64() int64 {
+	if n == "-" {
+		return 0
+	}
+
+	i, err := strconv.ParseInt(string(n), 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return i
+}
+
+type Numbers []Number
+
+func (o *Numbers) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range strings.Split(s, "_") {
+		if v == "" {
+			continue
+		}
+		*o = append(*o, Number(v))
+	}
+	return nil
+}
+
+type Time time.Time
+
+func (t *Time) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	v, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	*t = Time(time.Unix(v/1000, 0))
+	return nil
+}
+
+func (t Time) Time() time.Time {
+	return time.Time(t)
+}
 
 type Response struct {
 	MsgArray    []StockInfo `json:"msgArray"`
@@ -30,62 +113,55 @@ type QueryTime struct {
 }
 
 type StockInfo struct {
-	Symbol    string `json:"c"`
-	Ticker    string `json:"ch"`
-	Name      string `json:"nf"`
-	ShortName string `json:"n"`
-	Exchange  string `json:"ex"` // 上市或上櫃
-
-	Ask        types.Float      `json:"oa"` // 賣價
-	Bid        types.Float      `json:"ob"` // 買價
-	Asks       types.FloatSlice `json:"a"`  // 五檔賣出價格
-	Bids       types.FloatSlice `json:"b"`  // 五檔買入價格
-	AskVolumes types.IntSlice   `json:"f"`  // 五檔賣出數量
-	BidVolumes types.IntSlice   `json:"g"`  // 五檔買入數量
-
-	PrevClose types.Float `json:"y"` // 昨收
-	Open      types.Float `json:"o"` // 開盤
-	High      types.Float `json:"h"` // 最高
-	Low       types.Float `json:"l"` // 最低
-	Close     types.Float `json:"z"` // 收盤
-
-	TradePrice        types.Float `json:"pz"` // 成交價
-	Volume            types.Int   `json:"tv"` // 成交量
-	AccumulatedVolume types.Int   `json:"v"`  // 累積成交量
-
-	LimitUp   types.Float `json:"u"` // 漲停價
-	LimitDown types.Float `json:"w"` // 跌停價
-
-	UpdatedAt string     `json:"t"`
-	Timestamp types.Time `json:"tlong"`
-
-	TradeDate string `json:"d"` // 最近交易日期
-
-	Ps string `json:"ps"`
-	Nu string `json:"nu"`
-	Bp string `json:"bp"`
-	Fv string `json:"fv"`
-	Ot string `json:"ot"`
-	IP string `json:"ip"`
-	Mt string `json:"mt"`
-	Ov string `json:"ov"`
-	It string `json:"it"`
-	Oz string `json:"oz"`
-	P  string `json:"p"`
-	S  string `json:"s"`
-	Ts string `json:"ts"`
+	Symbol            string  `json:"c"`
+	Ticker            string  `json:"ch"`
+	Name              string  `json:"nf"`
+	ShortName         string  `json:"n"`
+	Exchange          string  `json:"ex"` // 上市或上櫃
+	Ask               Number  `json:"oa"` // 賣價
+	Bid               Number  `json:"ob"` // 買價
+	Asks              Numbers `json:"a"`  // 五檔賣出價格
+	Bids              Numbers `json:"b"`  // 五檔買入價格
+	AskVolumes        Numbers `json:"f"`  // 五檔賣出數量
+	BidVolumes        Numbers `json:"g"`  // 五檔買入數量
+	PrevClose         Number  `json:"y"`  // 昨收
+	Open              Number  `json:"o"`  // 開盤
+	High              Number  `json:"h"`  // 最高
+	Low               Number  `json:"l"`  // 最低
+	Close             Number  `json:"z"`  // 收盤
+	TradePrice        Number  `json:"pz"` // 成交價
+	Volume            Number  `json:"tv"` // 成交量
+	AccumulatedVolume Number  `json:"v"`  // 累積成交量
+	UpperBound        Number  `json:"u"`  // 漲停價
+	LowerBound        Number  `json:"w"`  // 跌停價
+	TradeTime         string  `json:"t"`  // 交易時間
+	TradeDate         string  `json:"d"`  // 交易日期
+	Timestamp         Time    `json:"tlong"`
+	Ps                Number  `json:"ps"`
+	Nu                string  `json:"nu"` // 網址
+	Bp                Number  `json:"bp"`
+	Fv                Number  `json:"fv"`
+	Ot                string  `json:"ot"` // 某個時間
+	IP                Number  `json:"ip"`
+	Mt                string  `json:"mt"`
+	Ov                Number  `json:"ov"`
+	It                Number  `json:"it"`
+	Oz                Number  `json:"oz"`
+	P                 Number  `json:"p"`
+	S                 Number  `json:"s"`
+	Ts                Number  `json:"ts"`
 }
 
 func (i StockInfo) String() string {
-	netChange := (i.TradePrice/i.PrevClose - 1.0) * 100
+	netChange := (i.TradePrice.Float64()/i.PrevClose.Float64() - 1.0) * 100
 	return fmt.Sprintf("%s(%s), Open: %s, High: %s, Low: %s, Last: %s, Net Change: %.2f%%, Volume: %d",
 		i.ShortName,
 		i.Symbol,
-		humanize.Commaf(float64(i.Open)),
-		humanize.Commaf(float64(i.High)),
-		humanize.Commaf(float64(i.Low)),
-		humanize.Commaf(float64(i.Close)),
+		humanize.Commaf(i.Open.Float64()),
+		humanize.Commaf(i.High.Float64()),
+		humanize.Commaf(i.Low.Float64()),
+		humanize.Commaf(i.Close.Float64()),
 		netChange,
-		i.AccumulatedVolume,
+		i.AccumulatedVolume.Int64(),
 	)
 }
