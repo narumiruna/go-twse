@@ -9,7 +9,7 @@ import (
 
 func main() {
 	c := twse.NewRestClient()
-	data, err := c.QueryStockInfo(context.Background(), "2330 0050")
+	data, err := c.QueryStockInfo(context.Background(), "2330 006208")
 	if err != nil {
 		panic(err)
 	}
