@@ -2,7 +2,6 @@ package twse
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/dustin/go-humanize"
 )
