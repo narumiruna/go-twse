@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 
 	"github.com/dustin/go-humanize"
+	log "github.com/sirupsen/logrus"
 )
 
 type Number string
@@ -152,8 +153,19 @@ type StockInfo struct {
 	Ts                Number  `json:"ts"`
 }
 
+func (i StockInfo) MidPrice() float64 {
+	ask := i.Asks[0].Float64()
+	bid := i.Bids[0].Float64()
+	return (ask + bid) / 2.0
+}
+
 func (i StockInfo) String() string {
-	netChange := (i.TradePrice.Float64()/i.PrevClose.Float64() - 1.0) * 100
+	curPrice := i.TradePrice.Float64()
+	if curPrice == 0 {
+		log.Infof("tradePrice is 0, use midPrice instead")
+		curPrice = i.MidPrice()
+	}
+	netChange := (curPrice/i.PrevClose.Float64() - 1.0) * 100
 	return fmt.Sprintf("%s(%s), Open: %s, High: %s, Low: %s, Last: %s, Net Change: %.2f%%, Volume: %d",
 		i.ShortName,
 		i.Symbol,
