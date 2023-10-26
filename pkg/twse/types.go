@@ -153,6 +153,9 @@ type StockInfo struct {
 }
 
 func (s StockInfo) MidPrice() float64 {
+	if len(s.Asks) == 0 || len(s.Bids) == 0 {
+		return 0
+	}
 	ask := s.Asks[0].Float64()
 	bid := s.Bids[0].Float64()
 	return (ask + bid) / 2.0
