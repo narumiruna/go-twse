@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 
 	"github.com/dustin/go-humanize"
-	log "github.com/sirupsen/logrus"
 )
 
 type Number string
@@ -153,27 +152,31 @@ type StockInfo struct {
 	Ts                Number  `json:"ts"`
 }
 
-func (i StockInfo) MidPrice() float64 {
-	ask := i.Asks[0].Float64()
-	bid := i.Bids[0].Float64()
+func (s StockInfo) MidPrice() float64 {
+	ask := s.Asks[0].Float64()
+	bid := s.Bids[0].Float64()
 	return (ask + bid) / 2.0
 }
 
-func (i StockInfo) String() string {
-	curPrice := i.TradePrice.Float64()
-	if curPrice == 0 {
-		log.Infof("tradePrice is 0, use midPrice instead")
-		curPrice = i.MidPrice()
+func (s StockInfo) LastPrice() float64 {
+	p := s.TradePrice.Float64()
+	if p == 0 {
+		p = s.MidPrice()
 	}
-	netChange := (curPrice/i.PrevClose.Float64() - 1.0) * 100
+	return p
+}
+
+func (s StockInfo) String() string {
+	lastPrice := s.LastPrice()
+	netChange := (lastPrice/s.PrevClose.Float64() - 1.0) * 100
 	return fmt.Sprintf("%s(%s), Open: %s, High: %s, Low: %s, Last: %s, Net Change: %.2f%%, Volume: %d",
-		i.ShortName,
-		i.Symbol,
-		humanize.Commaf(i.Open.Float64()),
-		humanize.Commaf(i.High.Float64()),
-		humanize.Commaf(i.Low.Float64()),
-		humanize.Commaf(i.Close.Float64()),
+		s.ShortName,
+		s.Symbol,
+		humanize.Commaf(s.Open.Float64()),
+		humanize.Commaf(s.High.Float64()),
+		humanize.Commaf(s.Low.Float64()),
+		humanize.Commaf(lastPrice),
 		netChange,
-		i.AccumulatedVolume.Int64(),
+		s.AccumulatedVolume.Int64(),
 	)
 }
