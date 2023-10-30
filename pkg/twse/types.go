@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"encoding/json"
-
-	"github.com/dustin/go-humanize"
 )
 
 type Number string
@@ -164,7 +162,7 @@ func (s StockInfo) MidPrice() float64 {
 func (s StockInfo) LastPrice() float64 {
 	p := s.TradePrice.Float64()
 	if p == 0 {
-		p = s.MidPrice()
+		return s.MidPrice()
 	}
 	return p
 }
@@ -172,13 +170,13 @@ func (s StockInfo) LastPrice() float64 {
 func (s StockInfo) String() string {
 	lastPrice := s.LastPrice()
 	netChange := (lastPrice/s.PrevClose.Float64() - 1.0) * 100
-	return fmt.Sprintf("%s(%s), Open: %s, High: %s, Low: %s, Last: %s, Net Change: %.2f%%, Volume: %d",
+	return fmt.Sprintf("%s(%s), Open: %.2f, High: %.2f, Low: %.2f, Last: %.2f, Net Change: %.2f%%, Volume: %d",
 		s.ShortName,
 		s.Symbol,
-		humanize.Commaf(s.Open.Float64()),
-		humanize.Commaf(s.High.Float64()),
-		humanize.Commaf(s.Low.Float64()),
-		humanize.Commaf(lastPrice),
+		s.Open.Float64(),
+		s.High.Float64(),
+		s.Low.Float64(),
+		lastPrice,
 		netChange,
 		s.AccumulatedVolume.Int64(),
 	)
