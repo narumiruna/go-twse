@@ -2,6 +2,7 @@ package twse
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,6 +30,9 @@ func NewRestClient() *RestClient {
 	return &RestClient{
 		client: &http.Client{
 			Timeout: defaultTimeout,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
 		},
 		baseURL: u,
 	}
