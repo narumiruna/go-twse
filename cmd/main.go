@@ -21,7 +21,7 @@ func main() {
 		"6861",
 		"6606",
 	}
-	c := twse.NewRestClient()
+	c := twse.NewClient()
 	data, err := c.QueryStockInfo(context.Background(), symbols...)
 	if err != nil {
 		panic(err)

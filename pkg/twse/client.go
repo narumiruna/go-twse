@@ -13,21 +13,23 @@ import (
 	"time"
 )
 
-const defaultTimeout = 15 * time.Second
-const baseApiUrl = "https://mis.twse.com.tw"
+const (
+	defaultTimeout = 15 * time.Second
+	baseURL        = "https://mis.twse.com.tw"
+)
 
-type RestClient struct {
+type Client struct {
 	client  *http.Client
 	baseURL *url.URL
 }
 
-func NewRestClient() *RestClient {
-	u, err := url.Parse(baseApiUrl)
+func NewClient() *Client {
+	u, err := url.Parse(baseURL)
 	if err != nil {
 		panic(err)
 	}
 
-	return &RestClient{
+	return &Client{
 		client: &http.Client{
 			Timeout: defaultTimeout,
 			Transport: &http.Transport{
@@ -38,7 +40,7 @@ func NewRestClient() *RestClient {
 	}
 }
 
-func (c *RestClient) NewRequest(ctx context.Context, method string, refURL string, params url.Values) (*http.Request, error) {
+func (c *Client) NewRequest(ctx context.Context, method string, refURL string, params url.Values) (*http.Request, error) {
 	rel, err := url.Parse(refURL)
 	if err != nil {
 		return nil, err
@@ -59,7 +61,7 @@ func (c *RestClient) NewRequest(ctx context.Context, method string, refURL strin
 	return req, nil
 }
 
-func (c *RestClient) QueryStockInfo(ctx context.Context, symbols ...string) (*Response, error) {
+func (c *Client) QueryStockInfo(ctx context.Context, symbols ...string) (*Response, error) {
 	params := url.Values{}
 	params.Add("ex_ch", buildExCh(symbols...))
 	params.Add("json", "1")
