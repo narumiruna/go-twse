@@ -170,6 +170,9 @@ func (s StockInfo) LastPrice() float64 {
 func (s StockInfo) String() string {
 	lastPrice := s.LastPrice()
 	netChange := (lastPrice/s.PrevClose.Float64() - 1.0) * 100
+	if s.Symbol == "" {
+		return ""
+	}
 	return fmt.Sprintf("%s(%s), Open: %.2f, High: %.2f, Low: %.2f, Last: %.2f, Net Change: %.2f%%, Volume: %d",
 		s.ShortName,
 		s.Symbol,
